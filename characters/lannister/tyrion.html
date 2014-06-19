@@ -30,7 +30,7 @@
             color: #fff;
             padding: 10px;
             width: 100%;
-            border-color: #444444;
+            border-color: #2b2b2b;
             background: -webkit-gradient(linear, left top, left bottom, from(#2b2b2b), to(#5a5a5a), color-stop(0.5, #2b2b2b), color-stop(0.5, #2b2b2b));
         }
 
@@ -43,7 +43,8 @@
     <div id="content">
         <h2 class="menu">Game of Thrones</h2>
     </div>
-    <div id="map" class="roundedCorners shadow" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
+    <div id="mapDiv"></div>
+    <div id></div>
     <button id="show" type="button"></button>
     <div id="content">...</div>
     <!-- Load the library and CSS references for ArcGIS API for JavaScript -->
@@ -51,18 +52,17 @@
 
     <script src="http://js.arcgis.com/3.8compact"></script>
     <script type="text/javascript">
-        require(["dojo/_base/lang","esri/config", "dojo/_base/array", "esri/tasks/query", "esri/request", "esri/arcgis/utils", "esri/tasks/QueryTask", "dojo/dom", "dojox/timing", "dojo/on", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/ArcGISTiledMapServiceLayer", "dojo/request/xhr"],
-                function (lang, esriConfig, array, Query, esriRequest, arcgisUtils, QueryTask, dom, timing, on, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, Tiled, xhr) {
-                    var pictureMarkerSymbol = new PictureMarkerSymbol('/symbols/tyrion.png', 25, 25);
+        require(["dojo/_base/lang", "esri/arcgis/utils", "esri/config", "dojo/_base/array", "esri/tasks/query", "esri/request", "esri/tasks/QueryTask", "dojo/dom", "dojox/timing", "dojo/on", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/ArcGISTiledMapServiceLayer", , "esri/layers/FeatureLayer"],
+                function (lang, utils, esriConfig, array, Query, esriRequest, QueryTask, dom, timing, on, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, Tiled, FeatureLayer) {
 
-                    arcgisUtils.createMap("352b69edb24a449a8c59778b757488b3", "map").then(lang.hitch(this, function (response) {
-                        var map = response.map;
-
-                        esriConfig.defaults.map.panDuration = 500; // time in milliseconds, default panDuration: 250
-                        esriConfig.defaults.map.panRate = 25; // default panRate: 25
-                        esriConfig.defaults.map.zoomDuration = 500; // default zoomDuration: 500
-                        esriConfig.defaults.map.zoomRate = 1; // default zoomRate: 25
-                    }));
+                    var map = null;
+                    utils.arcgisUrl = utils.arcgisUrl.replace("file:", "http:");
+                    utils.createMap("9b610ca269f64628837f0aac1d4bbc2c", "mapDiv")
+                        .then(function (response) {
+                            map = response.map;
+                        }, function (error) {
+                            console.log("Map creation failed: ", dojo.toJson(error));
+                        });
 
                     // Create a button to show activities nad click again to show webcams:
                     var showButton = new Button({
@@ -99,6 +99,6 @@
                     }, "show");
                 }
         );
-    </script>
-</body>
-</html>
+                </script>
+            </body>
+            </html>

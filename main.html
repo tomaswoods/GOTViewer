@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
     <link rel="stylesheet" href="css/core.css" type="text/css" media="screen" charset="utf-8" />
     <link rel="stylesheet" href="css/menu.css" type="text/css" media="screen" charset="utf-8" />
-    <title>Basic Map</title>
+    <title>Game of Thrones</title>
     <style type="text/css">
         body, html {
             width: 100%;
@@ -19,19 +19,38 @@
             width: 100%;
             margin: 0px;
         }
+
+        .button {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            font-size: 0.98em;
+            margin: 0;
+            display: block;
+            color: #fff;
+            padding: 10px;
+            width: 100%;
+            border-color: #2b2b2b;
+            background: -webkit-gradient(linear, left top, left bottom, from(#2b2b2b), to(#5a5a5a), color-stop(0.5, #2b2b2b), color-stop(0.5, #2b2b2b));
+        }
+
+        .buttonSelected {
+            background: -webkit-gradient(linear, left top, left bottom, from(#131313), to(#313131), color-stop(0.5, #2b2b2b), color-stop(0.5, #2b2b2b));
+        }
     </style>
 </head>
 <body>
     <div id="content">
         <h2 class="menu">Game of Thrones</h2>
     </div>
-    <div id="mapDiv" class="roundedCorners shadow" data-dojo-type="ContentPane" data-dojo-props="region:'center'"></div>
+    <div id="mapDiv"></div>
     <button id="show" type="button"></button>
-    <!-- Load the library references for ArcGIS API for JavaScript -->
+    <!-- Load the library and CSS references for ArcGIS API for JavaScript -->
     <link rel="stylesheet" type="text/css" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
-    <script type="text/javascript" src="http://js.arcgis.com/3.8compact"></script>
-    <script>
-
+    
+    <script src="http://js.arcgis.com/3.8compact"></script>
+    <script type="text/javascript" src="phonegap.js"></script>
+    <script type="text/javascript">
         var app = {
             // Application Constructor
             initialize: function () {
@@ -49,48 +68,60 @@
             // The scope of 'this' is the event. In order to call the 'receivedEvent'
             // function, we must explicity call 'app.receivedEvent(...);'
             onDeviceReady: function () {
-                app.receivedEvent('deviceready');
+                var networkState = navigator.network.connection.type;
+                var states = {};
+                states[Connection.UNKNOWN] = 'Unknown connection';
+                states[Connection.ETHERNET] = 'Ethernet connection';
+                states[Connection.WIFI] = 'WiFi connection';
+                states[Connection.CELL_2G] = 'Cell 2G connection';
+                states[Connection.CELL_3G] = 'Cell 3G connection';
+                states[Connection.CELL_4G] = 'Cell 4G connection';
+                states[Connection.NONE] = 'No network connection';
+                if (networkState != Connection.NONE)
+                {
+                    app.receivedEvent('deviceready');
+                }
+                else {
+                    navigator.notification.alert('No internet connection',null,'Connection Error', 'OK');
+                }
+                         
+                
             },
             // Update DOM on a Received Event
             receivedEvent: function (id) {
-                console.log('Received Event: ' + id);
-                mapInit();
-            }
-        };
+                console.log('Cordova device ready event: ' + id);
 
-        var mapInit = function () {
-            require(["esri/map", "esri/arcgis/utils", "dojox/mobile/Button", "dijit/layout/BorderContainer",
-            "dijit/layout/ContentPane"],
-                function (Map, utils, Button, BorderContainer, ContentPane) {
-                    // Create map
+                require(["dojo/_base/lang","esri/arcgis/utils", "dojo/dom", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/ArcGISTiledMapServiceLayer", "dojo/request/xhr"],
+                        function (lang, utils, dom, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, Tiled, xhr) {
 
-                    var map = null, helper;
-                    utils.arcgisUrl = utils.arcgisUrl.replace("file:", "http:");
-                    utils.createMap("352b69edb24a449a8c59778b757488b3", "mapDiv")
-                        .then(function (response) {
+                            var map = null;
+                            utils.arcgisUrl = utils.arcgisUrl.replace("file:", "http:");
+                            utils.createMap("9b610ca269f64628837f0aac1d4bbc2c", "mapDiv")
+                                .then(function (response) {
+                                    map = response.map;
 
-                            map = response.map;
+
+                                }, function (error) {
+                                    console.log("Map creation failed: ", dojo.toJson(error));
+                                });
+
 
                             // Create a button to show activities nad click again to show webcams:
                             var showButton = new Button({
-                                showLabel: true,
+                                showLabel:true,
                                 label: "Menu",
                                 class: "button",
                                 onClick: function () {
                                     window.location = './characters/menu.html';
                                 }
                             }, "show");
-
-                        }, function (error) {
-                            console.log("Map creation failed: ", dojo.toJson(error));
-                        });
-                }
-            );
-        }
+                        }
+                );
+            }
+        };
 
         app.initialize();
 
     </script>
-
 </body>
 </html>
