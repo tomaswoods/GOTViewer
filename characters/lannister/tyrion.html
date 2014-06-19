@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+    <link rel="stylesheet" href="../../css/core.css" type="text/css" media="screen" charset="utf-8" />
+    <link rel="stylesheet" href="../../css/menu.css" type="text/css" media="screen" charset="utf-8" />
+    <title>Game of Thrones</title>
+    <style type="text/css">
+        body, html {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+            padding: 0;
+        }
+
+        #mapDiv {
+            height: 100%;
+            width: 100%;
+            margin: 0px;
+        }
+
+        .button {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            font-size: 0.98em;
+            margin: 0;
+            display: block;
+            color: #fff;
+            padding: 10px;
+            width: 100%;
+            border-color: #444444;
+            background: -webkit-gradient(linear, left top, left bottom, from(#2b2b2b), to(#5a5a5a), color-stop(0.5, #2b2b2b), color-stop(0.5, #2b2b2b));
+        }
+
+        .buttonSelected {
+            background: -webkit-gradient(linear, left top, left bottom, from(#131313), to(#313131), color-stop(0.5, #2b2b2b), color-stop(0.5, #2b2b2b));
+        }
+    </style>
+</head>
+<body>
+    <div id="content">
+        <h2 class="menu">Game of Thrones</h2>
+    </div>
+    <div id="map" class="roundedCorners shadow" data-dojo-type="dijit/layout/ContentPane" data-dojo-props="region:'center'"></div>
+    <button id="show" type="button"></button>
+    <div id="content">...</div>
+    <!-- Load the library and CSS references for ArcGIS API for JavaScript -->
+    <link rel="stylesheet" type="text/css" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
+
+    <script src="http://js.arcgis.com/3.8compact"></script>
+    <script type="text/javascript">
+        require(["dojo/_base/lang","esri/config", "dojo/_base/array", "esri/tasks/query", "esri/request", "esri/arcgis/utils", "esri/tasks/QueryTask", "dojo/dom", "dojox/timing", "dojo/on", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/ArcGISTiledMapServiceLayer", "dojo/request/xhr"],
+                function (lang, esriConfig, array, Query, esriRequest, arcgisUtils, QueryTask, dom, timing, on, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, Tiled, xhr) {
+                    var pictureMarkerSymbol = new PictureMarkerSymbol('/symbols/tyrion.png', 25, 25);
+
+                    arcgisUtils.createMap("352b69edb24a449a8c59778b757488b3", "map").then(lang.hitch(this, function (response) {
+                        var map = response.map;
+
+                        esriConfig.defaults.map.panDuration = 500; // time in milliseconds, default panDuration: 250
+                        esriConfig.defaults.map.panRate = 25; // default panRate: 25
+                        esriConfig.defaults.map.zoomDuration = 500; // default zoomDuration: 500
+                        esriConfig.defaults.map.zoomRate = 1; // default zoomRate: 25
+                    }));
+
+                    // Create a button to show activities nad click again to show webcams:
+                    var showButton = new Button({
+                        showLabel: true,
+                        label: "Follow Tyrions story",
+                        class: "button",
+                        onClick: function () {
+                            var queryTask = new QueryTask("http://services2.arcgis.com/C0yb43Y6ZvlxeB1P/ArcGIS/rest/services/Tyrion's_Journey/FeatureServer/0");
+                            var query = new Query();
+                            query.where = "1=1";
+                            query.outFields = ["*"];
+                            query.returnGeometry = true;
+                            queryTask.execute(query, lang.hitch(this, function (results) {
+                                var featuerCount = results.length;
+                                var index = 0;
+                                var t = new dojox.timing.Timer(5000);
+                                t.onTick = function () {
+                                    if (index < featuerCount) {
+                                        var feature = results[index];
+                                        var attributes = feature.attributes;
+                                        graphic = new Graphic(feature.geometry, pictureMarkerSymbol);
+                                        this.map.graphics.add(graphic);
+                                        this.map.centerAt(feature.geometry);
+                                        dom.byId("content").innerHTML = attributes["description"];
+                                        index++;
+                                    }
+                                }
+                                t.start();
+                                
+                            }), lang.hitch(this, function (error) {
+                                console.log(error);
+                            }));
+                        }
+                    }, "show");
+                }
+        );
+    </script>
+</body>
+</html>
