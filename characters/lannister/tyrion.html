@@ -41,7 +41,7 @@
 </head>
 <body>
     <div id="content">
-        <h2 class="menu">Game of Thrones</h2>
+        <h2 class="menu">Game of Thrones<a href="../../index.html" rel="return" class="home">Back</a></h2>
     </div>
     <div id="mapDiv"></div>
     <div id="timeSliderDiv" style="display:none;"></div>
@@ -60,7 +60,7 @@
                             utils.createMap("9b610ca269f64628837f0aac1d4bbc2c", "mapDiv")
                                 .then(function (response) {
                                     map = response.map;
-                                    var TyrionLayer = new FeatureLayer("http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/Earthquakes/EarthquakesFromLastSevenDays/MapServer/0", {
+                                    var TyrionLayer = new FeatureLayer("http://services.arcgis.com/pMnvm7HXxTmNXxGi/arcgis/rest/services/Tyrions_journey_with_date/FeatureServer/0", {
                                         mode: FeatureLayer.MODE_SNAPSHOT,
                                         outFields: [ "*" ]
                                     });
@@ -75,9 +75,6 @@
                                     console.log("Map creation failed: ", dojo.toJson(error));
                                 });
 
-
-                            // Create a button to show activities nad click again to show webcams:
-                            // Create a button to show activities nad click again to show webcams:
                             var showButton = new Button({
                                 showLabel: true,
                                 label: "Start Tyrions story",
