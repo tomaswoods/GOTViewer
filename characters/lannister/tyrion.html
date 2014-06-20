@@ -30,7 +30,7 @@
             color: #fff;
             padding: 10px;
             width: 100%;
-            border-color: #2b2b2b;
+            border-color: #444444;
             background: -webkit-gradient(linear, left top, left bottom, from(#2b2b2b), to(#5a5a5a), color-stop(0.5, #2b2b2b), color-stop(0.5, #2b2b2b));
         }
 
@@ -52,53 +52,59 @@
 
     <script src="http://js.arcgis.com/3.8compact"></script>
     <script type="text/javascript">
-        require(["dojo/_base/lang", "esri/arcgis/utils", "esri/config", "dojo/_base/array", "esri/tasks/query", "esri/request", "esri/tasks/QueryTask", "dojo/dom", "dojox/timing", "dojo/on", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/ArcGISTiledMapServiceLayer", , "esri/layers/FeatureLayer"],
-                function (lang, utils, esriConfig, array, Query, esriRequest, QueryTask, dom, timing, on, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, Tiled, FeatureLayer) {
+        require(["dojo/_base/lang", "esri/tasks/QueryTask", "esri/tasks/query", "esri/arcgis/utils", "dojo/dom", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/ArcGISTiledMapServiceLayer", "dojo/request/xhr"],
+                        function (lang,QueryTask,Query, utils, dom, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, Tiled, xhr) {
 
-                    var map = null;
-                    utils.arcgisUrl = utils.arcgisUrl.replace("file:", "http:");
-                    utils.createMap("9b610ca269f64628837f0aac1d4bbc2c", "mapDiv")
-                        .then(function (response) {
-                            map = response.map;
-                        }, function (error) {
-                            console.log("Map creation failed: ", dojo.toJson(error));
-                        });
+                            var map = null;
+                            utils.arcgisUrl = utils.arcgisUrl.replace("file:", "http:");
+                            utils.createMap("9b610ca269f64628837f0aac1d4bbc2c", "mapDiv")
+                                .then(function (response) {
+                                    map = response.map;
 
-                    // Create a button to show activities nad click again to show webcams:
-                    var showButton = new Button({
-                        showLabel: true,
-                        label: "Follow Tyrions story",
-                        class: "button",
-                        onClick: function () {
-                            var queryTask = new QueryTask("http://services2.arcgis.com/C0yb43Y6ZvlxeB1P/ArcGIS/rest/services/Tyrion's_Journey/FeatureServer/0");
-                            var query = new Query();
-                            query.where = "1=1";
-                            query.outFields = ["*"];
-                            query.returnGeometry = true;
-                            queryTask.execute(query, lang.hitch(this, function (results) {
-                                var featuerCount = results.length;
-                                var index = 0;
-                                var t = new dojox.timing.Timer(5000);
-                                t.onTick = function () {
-                                    if (index < featuerCount) {
-                                        var feature = results[index];
-                                        var attributes = feature.attributes;
-                                        graphic = new Graphic(feature.geometry, pictureMarkerSymbol);
-                                        this.map.graphics.add(graphic);
-                                        this.map.centerAt(feature.geometry);
-                                        dom.byId("content").innerHTML = attributes["description"];
-                                        index++;
-                                    }
-                                }
-                                t.start();
+
+                                }, function (error) {
+                                    console.log("Map creation failed: ", dojo.toJson(error));
+                                });
+
+
+                            // Create a button to show activities nad click again to show webcams:
+                            // Create a button to show activities nad click again to show webcams:
+                            var showButton = new Button({
+                                showLabel: true,
+                                label: "Start Tyrions story",
+                                class: "button",
+                                onClick: function () {
+                                    var queryTask = new QueryTask("http://services2.arcgis.com/C0yb43Y6ZvlxeB1P/ArcGIS/rest/services/Tyrion's_Journey/FeatureServer/0");
+                                    var query = new Query();
+                                    query.where = "1=1";
+                                    query.outFields = ["*"];
+                                    query.returnGeometry = true;
+                                    queryTask.execute(query, lang.hitch(this, function (results) {
+                                        debugger;
+                                        var featuerCount = results.length;
+                                        var index = 0;
+                                        var t = new dojox.timing.Timer(5000);
+                                        t.onTick = function () {
+                                            debugger;
+                                            if (index < featuerCount) {
+                                                var feature = results[index];
+                                                var attributes = feature.attributes;
+                                                graphic = new Graphic(feature.geometry, pictureMarkerSymbol);
+                                                this.map.graphics.add(graphic);
+                                                this.map.centerAt(feature.geometry);
+                                                dom.byId("content").innerHTML = attributes["description"];
+                                                index++;
+                                            }
+                                        }
+                                        t.start();
                                 
-                            }), lang.hitch(this, function (error) {
-                                console.log(error);
-                            }));
+                                    }), lang.hitch(this, function (error) {
+                                        console.log(error);
+                                    }));
+                                }
+                            }, "show");
                         }
-                    }, "show");
-                }
-        );
+                );
                 </script>
             </body>
             </html>
