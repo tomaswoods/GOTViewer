@@ -41,7 +41,7 @@
 </head>
 <body>
     <div id="content">
-        <h2 class="menu">Game of Thrones<a href="../../index.html" rel="return" class="home">Back</a></h2>
+        <h2 class="menu">Game of Thrones<a href="../menu.html" rel="return" class="home">Back</a></h2>
     </div>
     <div id="mapDiv"></div>
     <div id="timeSliderDiv" style="display:none;"></div>
@@ -52,8 +52,8 @@
 
     <script src="http://js.arcgis.com/3.8compact"></script>
     <script type="text/javascript">
-        require(["dojo/_base/lang","esri/TimeExtent", "esri/layers/TimeInfo", "esri/tasks/QueryTask", "esri/tasks/query", "esri/arcgis/utils", "dojo/dom", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/FeatureLayer"],
-                        function (lang,TimeExtent, TimeInfo, QueryTask, Query, utils, dom, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, FeatureLayer) {
+        require(["dojo/_base/lang","esri/symbols/PictureMarkerSymbol","esri/TimeExtent", "esri/layers/TimeInfo", "esri/tasks/QueryTask", "esri/tasks/query", "esri/arcgis/utils", "dojo/dom", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/FeatureLayer"],
+                        function (lang, PictureMarkerSymbol,TimeExtent, TimeInfo, QueryTask, Query, utils, dom, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, FeatureLayer) {
                             var timeSlider = null;
                             var map = null;
                             utils.arcgisUrl = utils.arcgisUrl.replace("file:", "http:");
@@ -64,12 +64,16 @@
                                         mode: FeatureLayer.MODE_SNAPSHOT,
                                         outFields: [ "*" ]
                                     });
+                                    var pictureMarkerSymbol = new PictureMarkerSymbol('/images/diamond.png', 25, 25);
+                                    var tyrionRenderer = new SimpleRenderer(pictureMarkerSymbol);
+                                    TyrionLayer.setRenderer(tyrionRenderer);
                                     var timeExtent = new TimeExtent();
                                     var start = new Date(2014, 6, 1);
                                     var end = new Date(2014, 6, 24);
                                     timeExtent.endTime = end;
                                     timeExtent.startTime = start;
                                     TyrionLayer.setTimeDefinition(timeExtent);
+                                    map.addLayer(TyrionLayer);
 
                                 }, function (error) {
                                     console.log("Map creation failed: ", dojo.toJson(error));
