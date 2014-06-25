@@ -52,28 +52,62 @@
 
     <script src="http://js.arcgis.com/3.8compact"></script>
     <script type="text/javascript">
-        require(["dojo/_base/lang","esri/symbols/PictureMarkerSymbol","esri/TimeExtent", "esri/layers/TimeInfo", "esri/tasks/QueryTask", "esri/tasks/query", "esri/arcgis/utils", "dojo/dom", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/FeatureLayer"],
-                        function (lang, PictureMarkerSymbol,TimeExtent, TimeInfo, QueryTask, Query, utils, dom, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, FeatureLayer) {
+        require(["dojo/_base/lang","esri/dijit/TimeSlider","esri/renderers/SimpleRenderer","esri/symbols/PictureMarkerSymbol","esri/TimeExtent", "esri/layers/TimeInfo", "esri/tasks/QueryTask", "esri/tasks/query", "esri/arcgis/utils", "dojo/dom", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/FeatureLayer"],
+                        function (lang, TimeSlider,SimpleRenderer, PictureMarkerSymbol, TimeExtent, TimeInfo, QueryTask, Query, utils, dom, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, FeatureLayer) {
                             var timeSlider = null;
+                            var timeExtent = null;
                             var map = null;
                             utils.arcgisUrl = utils.arcgisUrl.replace("file:", "http:");
                             utils.createMap("9b610ca269f64628837f0aac1d4bbc2c", "mapDiv")
                                 .then(function (response) {
-                                    map = response.map;
-                                    var TyrionLayer = new FeatureLayer("http://services.arcgis.com/pMnvm7HXxTmNXxGi/arcgis/rest/services/Tyrions_journey_with_date/FeatureServer/0", {
-                                        mode: FeatureLayer.MODE_SNAPSHOT,
-                                        outFields: [ "*" ]
-                                    });
-                                    var pictureMarkerSymbol = new PictureMarkerSymbol('/images/diamond.png', 25, 25);
-                                    var tyrionRenderer = new SimpleRenderer(pictureMarkerSymbol);
-                                    TyrionLayer.setRenderer(tyrionRenderer);
-                                    var timeExtent = new TimeExtent();
-                                    var start = new Date(2014, 6, 1);
-                                    var end = new Date(2014, 6, 24);
-                                    timeExtent.endTime = end;
-                                    timeExtent.startTime = start;
-                                    TyrionLayer.setTimeDefinition(timeExtent);
-                                    map.addLayer(TyrionLayer);
+                                    try {
+                                        map = response.map;
+                                        var TyrionLayer = new FeatureLayer("http://services.arcgis.com/pMnvm7HXxTmNXxGi/ArcGIS/rest/services/Tyrion/FeatureServer/0", {
+                                            mode: FeatureLayer.MODE_SNAPSHOT,
+                                            outFields: [ "*" ]
+                                        });
+                                        var pictureMarkerSymbol = new PictureMarkerSymbol('symbols/tyrion.png', 25, 25);
+                                        //setup a temporal renderer
+                                        var sms = new esri.symbol.SimpleMarkerSymbol().setColor(new dojo.Color([255, 0, 0])).setSize(8);
+                                        var observationRenderer = new esri.renderer.SimpleRenderer(sms);
+                                        var latestObservationRenderer = new esri.renderer.SimpleRenderer(pictureMarkerSymbol);
+                                        var infos = [{
+                                            minAge: 0,
+                                            maxAge: 1,
+                                            color: new dojo.Color([255, 0, 0])
+                                        }, {
+                                            minAge: 1,
+                                            maxAge: 5,
+                                            color: new dojo.Color([255, 153, 0])
+                                        }, {
+                                            minAge: 5,
+                                            maxAge: 10,
+                                            color: new dojo.Color([255, 204, 0])
+                                        }, {
+                                            minAge: 10,
+                                            maxAge: Infinity,
+                                            color: new dojo.Color([0, 0, 0, 0])
+                                        }];
+
+                                        var ager = new esri.renderer.TimeClassBreaksAger(infos, esri.renderer.TimeClassBreaksAger.UNIT_MONTHS);
+                                        var sls = new esri.symbol.SimpleLineSymbol(esri.symbol.SimpleLineSymbol.STYLE_DASH, new dojo.Color([0, 0, 0]), 3);
+                                        var trackRenderer = new esri.renderer.SimpleRenderer(sls);
+                                        var tyrionRenderer = new esri.renderer.TemporalRenderer(observationRenderer, latestObservationRenderer, trackRenderer, ager);
+
+                                        TyrionLayer.setRenderer(tyrionRenderer);
+                                        timeExtent = new TimeExtent();
+                                        var start = new Date(2014, 1, 5);
+                                        var end = new Date(2014,12, 5);
+                                        timeExtent.endTime = end;
+                                        timeExtent.startTime = start;
+                                        TyrionLayer.setTimeDefinition(timeExtent);
+                                        map.addLayer(TyrionLayer);
+                                        // get object IDs from the table (feature layer)
+                                        TyrionLayer.on("load", lang.hitch(this,featureLayerLoaded));
+                                    }
+                                    catch (err) {
+                                        console.log("Error" + err.message);
+                                    }
 
                                 }, function (error) {
                                     console.log("Map creation failed: ", dojo.toJson(error));
@@ -93,7 +127,7 @@
 
                                     }
                                     else {
-                                        showButton.set("label", "Start Tyrions story");
+                                        showButton.set("label", "Pause Tyrions story");
                                         if (timeSlider != null) {
                                             timeSlider.pause();
                                         }
@@ -102,14 +136,19 @@
                             }, "show");
 
                             function featureLayerLoaded(evt) {
-                                // create time slider
-                                timeSlider = new TimeSlider({ style: "width: 100%;" }, dom.byId("timeSliderDiv"));
-                                timeSlider.setThumbCount(1);
-                                timeSlider.createTimeStopsByTimeInterval(evt.layer.getTimeDefinition(), 1, TimeInfo.UNIT_DAYS);
-                                timeSlider.setThumbIndexes([0]);
-                                timeSlider.on("time-extent-change", displayDetails);
-                                timeSlider.startup();
-                                map.setTimeSlider(timeSlider);
+                                try {
+                                    // create time slider
+                                    timeSlider = new TimeSlider({ style: "width: 100%;" }, dom.byId("timeSliderDiv"));
+                                    timeSlider.setThumbCount(1);
+                                    timeSlider.createTimeStopsByCount(evt.layer.getTimeDefinition(),22);
+                                    timeSlider.setThumbIndexes([0]);
+                                    timeSlider.on("time-extent-change", displayDetails);
+                                    timeSlider.startup();
+                                    map.setTimeSlider(timeSlider);
+                                }
+                                catch (err) {
+                                    console.log("Error" + err.message);
+                                }
                             }
                             function displayDetails(timeExtent) {
                                 var info = timeExtent.startTime.toDateString() +
