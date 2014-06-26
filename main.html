@@ -91,15 +91,17 @@
             receivedEvent: function (id) {
                 console.log('Cordova device ready event: ' + id);
 
-                require(["dojo/_base/lang","esri/arcgis/utils", "dojo/dom", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/ArcGISTiledMapServiceLayer", "dojo/request/xhr"],
-                        function (lang, utils, dom, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, Tiled, xhr) {
+                require(["dojo/_base/lang", "dojo/_base/array", "esri/arcgis/utils", "dojo/dom", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button", "esri/renderers/SimpleRenderer", "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/symbols/PictureMarkerSymbol", "esri/map", "esri/geometry/Extent", "esri/layers/ArcGISTiledMapServiceLayer", "dojo/request/xhr"],
+                        function (lang, array, utils, dom, domStyle, domAttr, Button, SimpleRenderer, GraphicsLayer, Graphic, Point, PictureMarkerSymbol, Map, Extent, Tiled, xhr) {
 
                             var map = null;
                             utils.arcgisUrl = utils.arcgisUrl.replace("file:", "http:");
-                            utils.createMap("9b610ca269f64628837f0aac1d4bbc2c", "mapDiv")
+                            utils.createMap("dc8f6267224148feacce88f1d88aff9b", "mapDiv")
                                 .then(function (response) {
                                     map = response.map;
-
+                                    var layer = response.itemInfo.itemData.operationalLayers[0];
+                                    TyrionLayer = map.getLayer(layer.id);
+                                    TyrionLayer.setVisibility(false);
 
                                 }, function (error) {
                                     console.log("Map creation failed: ", dojo.toJson(error));
