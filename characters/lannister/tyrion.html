@@ -40,7 +40,7 @@
 
         #description {
             clear: both;
-            padding:3px;
+            padding:4px;
             top: 40px;
             display: block;
             width: 100%;
@@ -177,7 +177,7 @@
 
                                         }
                                         else {
-                                            showButton.set("label", "Pause Tyrions story");
+                                            showButton.set("label", "Start Tyrions story");
                                             if (timeSlider != null) {
                                                 timeSlider.pause();
                                             }
@@ -187,7 +187,7 @@
                                 timeSlider = new TimeSlider({ style: "width: 100%;" }, dom.byId("timeSliderDiv"));
                                 timeSlider.setThumbCount(1);
                                 timeSlider.createTimeStopsByTimeInterval(timeExtent, 1, TimeInfo.UNIT_DAYS);
-                                timeSlider.setThumbMovingRate(7000);
+                                timeSlider.setThumbMovingRate(9000);
                                 timeSlider.on("time-extent-change", displayDetails);
                                 timeSlider.startup();
                                 map.setTimeSlider(timeSlider);
