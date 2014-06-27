@@ -62,70 +62,94 @@
     <!-- Load the library and CSS references for ArcGIS API for JavaScript -->
     <link rel="stylesheet" type="text/css" href="http://js.arcgis.com/3.8/js/esri/css/esri.css">
 
-    <script src="http://js.arcgis.com/3.8compact"></script>
+    <script src="http://js.arcgis.com/3.9compact"></script>
     <script type="text/javascript">
-        require(["dojo/_base/lang", "esri/config", "dojo/_base/array", "esri/symbols/SimpleMarkerSymbol", "esri/renderers/TemporalRenderer", "esri/symbols/SimpleLineSymbol", "esri/renderers/TimeClassBreaksAger", "esri/dijit/TimeSlider", "esri/renderers/SimpleRenderer", "esri/symbols/PictureMarkerSymbol", "esri/TimeExtent", "esri/layers/TimeInfo", "esri/tasks/QueryTask", "esri/tasks/query", "esri/arcgis/utils", "dojo/dom", "dojo/dom-style", "dojo/dom-attr", "dojox/mobile/Button",  "esri/layers/GraphicsLayer", "esri/graphic", "esri/geometry/Point", "esri/map", "esri/geometry/Extent", "esri/layers/FeatureLayer"],
+        require(["dojo/_base/lang",
+            "esri/config",
+            "dojo/_base/array",
+            "esri/symbols/SimpleMarkerSymbol",
+            "esri/renderers/TemporalRenderer",
+            "esri/symbols/SimpleLineSymbol",
+            "esri/renderers/TimeClassBreaksAger",
+            "esri/dijit/TimeSlider",
+            "esri/renderers/SimpleRenderer",
+            "esri/symbols/PictureMarkerSymbol",
+            "esri/TimeExtent",
+            "esri/layers/TimeInfo",
+            "esri/tasks/QueryTask",
+            "esri/tasks/query",
+            "esri/arcgis/utils",
+            "dojo/dom",
+            "dojo/dom-style",
+            "dojo/dom-attr",
+            "dojox/mobile/Button",
+            "esri/layers/GraphicsLayer",
+            "esri/graphic",
+            "esri/geometry/Point",
+            "esri/map",
+            "esri/geometry/Extent",
+            "esri/layers/FeatureLayer"],
                         function (lang, esriConfig, array, SimpleMarkerSymbol, TemporalRenderer, SimpleLineSymbol, TimeClassBreaksAger, TimeSlider, SimpleRenderer, PictureMarkerSymbol, TimeExtent, TimeInfo, QueryTask, Query, utils, dom, domStyle, domAttr, Button, GraphicsLayer, Graphic, Point, Map, Extent, FeatureLayer) {
                             var timeSlider = null;
                             var timeExtent = null;
                             var TyrionLayer;
                             var map = null;
+                            esriConfig.defaults.map.panDuration = 500; // time in milliseconds, default panDuration: 250
+                            esriConfig.defaults.map.panRate = 40; // default panRate: 25
                             utils.arcgisUrl = utils.arcgisUrl.replace("file:", "http:");
                             utils.createMap("dc8f6267224148feacce88f1d88aff9b", "mapDiv").then(function (response) {
-                                    try {
+                                try {
+                                   
                                         var layers = response.itemInfo.itemData.operationalLayers;
                                         map = response.map;
                                         map.hideZoomSlider();
                                         var layer = response.itemInfo.itemData.operationalLayers[0];
-                                        TyrionLayer = map.getLayer(layer.id);
-                                        //TyrionLayer = new FeatureLayer("http://services.arcgis.com/pMnvm7HXxTmNXxGi/arcgis/rest/services/Tyrion/FeatureServer/0", {
-                                        //    mode: FeatureLayer.MODE_SNAPSHOT,
-                                        //    outFields: [ "*" ]
-                                        //});
+                                        hideLayer = map.getLayer(layer.id);
+                                        hideLayer.setVisibility(false);
+                                        TyrionLayer = new FeatureLayer("http://services.arcgis.com/pMnvm7HXxTmNXxGi/arcgis/rest/services/Tyrion/FeatureServer/0", {
+                                            mode: FeatureLayer.MODE_SNAPSHOT,
+                                            outFields: [ "*" ]
+                                        });
                                         var pictureMarkerSymbol = new PictureMarkerSymbol('symbols/tyrion.png', 25, 25);
                                         //setup a temporal renderer
-                                        var sms = new SimpleMarkerSymbol().setColor(new dojo.Color([255, 0, 0])).setSize(8);
+                                        var sms = new SimpleMarkerSymbol().setColor(new esri.Color([255, 0, 0])).setSize(8);
                                         var observationRenderer = new SimpleRenderer(sms);
                                         var latestObservationRenderer = new SimpleRenderer(pictureMarkerSymbol);
                                         var infos = [{
-                                            minAge: 0,
-                                            maxAge: 1,
-                                            color: new dojo.Color([255, 0, 0])
-                                        }, {
                                             minAge: 1,
-                                            maxAge: 3,
-                                            color: new dojo.Color([255, 153, 0])
+                                            maxAge: 4,
+                                            color: new esri.Color([255, 255, 0])
                                         }, {
-                                            minAge: 3,
-                                            maxAge: 7,
-                                            color: new dojo.Color([255, 204, 0])
+                                            minAge: 4,
+                                            maxAge: 9,
+                                            color: new esri.Color([255, 153, 0])
                                         }, {
-                                            minAge: 7,
+                                            minAge: 9,
+                                            maxAge: 14,
+                                            color: new esri.Color([255, 204, 0])
+                                        }, {
+                                            minAge: 14,
                                             maxAge: Infinity,
-                                            color: new dojo.Color([0, 0, 0, 0])
+                                            color: new esri.Color([0, 0, 0, 0])
                                         }];
 
                                         var ager = new TimeClassBreaksAger(infos, TimeClassBreaksAger.UNIT_DAYS);
-                                        var sls = new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASH, new dojo.Color([0, 0, 0]), 2);
+                                        var sls = new SimpleLineSymbol(SimpleLineSymbol.STYLE_DASH, new esri.Color([0, 0, 0],0.5), 1);
                                         var trackRenderer = new SimpleRenderer(sls);
                                         var tyrionRenderer = new TemporalRenderer(observationRenderer, latestObservationRenderer, trackRenderer, ager);
 
                                         TyrionLayer.setRenderer(tyrionRenderer);
-                                        TyrionLayer.refresh();
                                         timeExtent = new TimeExtent();
                                         var start = new Date(2014, 5, 1);
                                         var end = new Date(2014,9, 31);
                                         timeExtent.endTime = end;
                                         timeExtent.startTime = start;
-                                        //TyrionLayer.setTimeDefinition(timeExtent);
-                                        // create time slider
-                                        timeSlider = new TimeSlider({ style: "width: 100%;" }, dom.byId("timeSliderDiv"));
-                                        timeSlider.setThumbCount(1);
-                                        timeSlider.createTimeStopsByTimeInterval(timeExtent, 1, TimeInfo.UNIT_DAYS);
-                                        timeSlider.setThumbMovingRate(5000);
-                                        timeSlider.on("time-extent-change", displayDetails);
-                                        timeSlider.startup();
-                                        map.setTimeSlider(timeSlider);
+                                        TyrionLayer.on("load", featureLayerLoaded);
+                                        map.addLayer(TyrionLayer);
+                                        map.on("pan-end", function () {
+                                            timeSlider.play();
+                                        });
+                                        
                                     }
                                     catch (err) {
                                         console.log("Error" + err.message);
@@ -136,51 +160,65 @@
                                     console.log("Map creation failed: ", dojo.toJson(error));
                                 });
 
-                            var showButton = new Button({
-                                showLabel: true,
-                                label: "Start Tyrions story",
-                                class: "button",
-                                onClick: function () {
-                                    var lbl = showButton.get("label");
-                                    if (lbl === "Start Tyrions story") {
-                                        showButton.set("label", "Pause");
-                                        if (timeSlider != null) {
-                                            timeSlider.play();
-                                        }
 
-                                    }
-                                    else {
-                                        showButton.set("label", "Pause Tyrions story");
-                                        if (timeSlider != null) {
-                                            timeSlider.pause();
+                            function featureLayerLoaded(evt) {
+                                // create time slider
+                                var showButton = new Button({
+                                    showLabel: true,
+                                    label: "Start Tyrions story",
+                                    class: "button",
+                                    onClick: function () {
+                                        var lbl = showButton.get("label");
+                                        if (lbl === "Start Tyrions story") {
+                                            showButton.set("label", "Pause");
+                                            if (timeSlider != null) {
+                                                timeSlider.play();
+                                            }
+
+                                        }
+                                        else {
+                                            showButton.set("label", "Pause Tyrions story");
+                                            if (timeSlider != null) {
+                                                timeSlider.pause();
+                                            }
                                         }
                                     }
-                                }
-                            }, "show");
+                                }, "show");
+                                timeSlider = new TimeSlider({ style: "width: 100%;" }, dom.byId("timeSliderDiv"));
+                                timeSlider.setThumbCount(1);
+                                timeSlider.createTimeStopsByTimeInterval(timeExtent, 1, TimeInfo.UNIT_DAYS);
+                                timeSlider.setThumbMovingRate(7000);
+                                timeSlider.on("time-extent-change", displayDetails);
+                                timeSlider.startup();
+                                map.setTimeSlider(timeSlider);
+                            }
 
                             function displayDetails(tExtent) {
                                 try {
+                                    timeSlider.pause();
                                     var graphics = TyrionLayer.graphics;
                                     var filteredGraphics = array.filter(graphics, function (item) {
                                         if(!item)
                                         {
                                             alert("NULL");
                                         }
-                                        return item.visible === true;
+                                        return item.visible === false;
                                     });
 
                                     if (filteredGraphics.length > 0)
                                     {
-                                        var feature = filteredGraphics[filteredGraphics.length -1];
+                                        var feature = filteredGraphics[0];
                                         var attr = feature.attributes;
                                         var info = attr["description"];
-                                        dom.byId("description").innerHTML = info;
+                                        dom.byId("description").innerHTML = info;                                       
                                         map.centerAt(feature.geometry);
+                                    }
+                                    else {
+                                        timeSlider.play();
                                     }
                                     
                                 }
                                 catch (err) {
-                                    debugger;
                                     console.log("Error" + err.message);
                                 }
                             }
